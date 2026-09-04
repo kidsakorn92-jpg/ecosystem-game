@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>นิเวศวิทยาหรรษา - เรียนรู้ ห่วงโซ่อาหาร & สายใยอาหาร ป.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f0fdf4;
+        }
+        .tab-active {
+            background-color: #16a34a;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .eco-node {
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        .eco-node:hover {
+            transform: scale(1.08);
+        }
+        .eco-node.selected {
+            ring: 4px;
+            ring-color: #eab308;
+            transform: scale(1.1);
+        }
+        .draggable {
+            cursor: grab;
+            user-select: none;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: background-color 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: #bbf7d0;
+            border-color: #16a34a;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #86efac;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #22c55e;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-2 rounded-full text-green-600 shadow-md">
+                    <i class="fa-solid font-bold fa-leaf text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide">นิเวศวิทยาหรรษา 🌿</h1>
+                    <p class="text-xs text-green-100 hidden sm:block">บทเรียนวิทยาศาสตร์ ป.5 : ห่วงโซ่อาหารและสายใยอาหาร</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="bg-green-800/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-green-400/30 flex items-center gap-3">
+                    <div class="text-xs">
+                        <div class="text-green-200">นักเรียน: <span id="displayStudentName" class="text-white font-semibold">ยังไม่ระบุ</span></div>
+                        <div class="text-amber-300 font-bold">คะแนนรวม: <span id="totalScore">0</span>/100</div>
+                    </div>
+                    <button onclick="openNameModal()" class="text-xs bg-yellow-400 hover:bg-yellow-300 text-green-950 px-2 py-1 rounded font-bold transition">
+                        <i class="fa-solid fa-user-pen"></i> เปลี่ยน
+                    </button>
+                </div>
+
+                <button onclick="openTeacherModal()" class="bg-teal-800 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-chalkboard-user text-sm"></i>
+                    <span class="hidden md:inline">สำหรับครู</span>
+                </button>
+            </div>
+        </div>
+
+        <nav class="bg-green-700/80 backdrop-blur-md px-2 pt-2 border-t border-green-500/30 overflow-x-auto">
+            <div class="max-w-7xl mx-auto flex space-x-1 min-w-max pb-1 text-sm font-medium">
+                <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn tab-active px-3 py-2 rounded-t-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-book-open"></i> 1. บทเรียนพื้นฐาน
+                </button>
+                <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-sun"></i> 2. ผู้ผลิต & ผู้บริโภค
+                </button>
+                <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-recycle"></i> 3. ผู้ย่อยสลาย
+                </button>
+                <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i> 4. การถ่ายทอดพลังงาน
+                </button>
+                <button onclick="switchTab(5)" id="tab-btn-5" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-link"></i> 5. ห่วงโซ่อาหาร
+                </button>
+                <button onclick="switchTab(6)" id="tab-btn-6" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-network-wired"></i> 6. อ่านภาพสายใยอาหาร
+                </button>
+                <button onclick="switchTab(7)" id="tab-btn-7" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-scale-unbalanced"></i> 7. เมื่อระบบนิเวศเปลี่ยน
+                </button>
+                <button onclick="switchTab(8)" id="tab-btn-8" class="tab-btn px-3 py-2 rounded-t-lg text-green-100 hover:bg-green-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-flask"></i> 8.ห้องทดลองเสมือนจริง
+                </button>
+                <button onclick="switchTab(9)" id="tab-btn-9" class="tab-btn px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-t-lg transition flex items-center gap-1.5 ml-2 shadow">
+                    <i class="fa-solid fa-gamepad"></i> 9. เกมและแบบทดสอบ (10 ด่าน)
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <section id="tab-1" class="tab-content space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <div class="flex items-center gap-3 mb-4 text-green-700">
+                    <i class="fa-solid fa-tree text-3xl"></i>
+                    <h2 class="text-2xl font-bold">ระบบนิเวศคืออะไร? (Ecosystem)</h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-lg mb-4">
+                    <strong>ระบบนิเวศ</strong> หมายถึง ความสัมพันธ์ของสิ่งมีชีวิตต่างๆ ที่อาศัยอยู่ร่วมกันในบริเวณใดบริเวณหนึ่ง และมีความสัมพันธ์กับสิ่งไม่มีชีวิตในแหล่งที่อยู่นั้น เช่น แสงแดด น้ำ อากาศ และดิน
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                        <h3 class="font-bold text-emerald-800 text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-bug"></i> สิ่งมีชีวิต (Biotic Factors)
+                        </h3>
+                        <p class="text-slate-600">พืช, สัตว์, แบคทีเรีย, เห็ดรา ที่มีการดำรงชีวิตและพึ่งพาอาศัยกัน</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-xl border border-sky-200">
+                        <h3 class="font-bold text-sky-800 text-lg mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-sun"></i> สิ่งไม่มีชีวิต (Abiotic Factors)
+                        </h3>
+                        <p class="text-slate-600">แสงแดด, อากาศ, น้ำ, ดิน, แร่ธาตุ, อุณหภูมิ ที่ช่วยสนับสนุนการเจริญเติบโต</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-2" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-wheat-awn"></i> บทบาทของสิ่งมีชีวิตในห่วงโซ่อาหาร
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-green-50 p-5 rounded-2xl border-2 border-green-200 hover:shadow-lg transition">
+                        <div class="text-4xl text-center mb-2">🌱</div>
+                        <h3 class="text-xl font-bold text-green-800 text-center mb-2">1. ผู้ผลิต (Producers)</h3>
+                        <p class="text-slate-600 text-sm">สิ่งมีชีวิตที่สร้างอาหารเองได้ โดยกระบวนการ<b>สังเคราะห์ด้วยแสง</b> เช่น ต้นหญ้า, ข้าว, สาหร่าย, ต้นไม้ใหญ่</p>
+                    </div>
+                    <div class="bg-amber-50 p-5 rounded-2xl border-2 border-amber-200 hover:shadow-lg transition">
+                        <div class="text-4xl text-center mb-2">🐇</div>
+                        <h3 class="text-xl font-bold text-amber-800 text-center mb-2">2. ผู้บริโภคพืช (Herbivores)</h3>
+                        <p class="text-slate-600 text-sm">สิ่งมีชีวิตที่ไม่สามารถสร้างอาหารเองได้ ต้องกินพืชเป็นอาหาร (ผู้บริโภคอันดับ 1) เช่น กระต่าย, วัว, ตั๊กแตน, ช้าง</p>
+                    </div>
+                    <div class="bg-rose-50 p-5 rounded-2xl border-2 border-rose-200 hover:shadow-lg transition">
+                        <div class="text-4xl text-center mb-2">🐅</div>
+                        <h3 class="text-xl font-bold text-rose-800 text-center mb-2">3. ผู้บริโภคสัตว์ & ทั้งพืชทั้งสัตว์</h3>
+                        <p class="text-slate-600 text-sm"><b>กินสัตว์ (Carnivores):</b> เสือ, งู, เหยี่ยว<br><b>กินทั้งพืชและสัตว์ (Omnivores):</b> คน, ไก่, หมี</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-3" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-purple-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-bacteria"></i> ผู้ย่อยสลายสารอินทรีย์ (Decomposers)
+                </h2>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="text-8xl text-center bg-purple-50 p-8 rounded-full border-4 border-purple-200">🍄</div>
+                    <div class="space-y-3">
+                        <p class="text-lg text-slate-700">
+                            สิ่งมีชีวิตที่ไม่สามารถสร้างอาหารเองได้ และไม่ได้กินสิ่งมีชีวิตอื่นเป็นๆ แต่มันจะ <b>หลั่งเอนไซม์ออกมาเพื่อย่อยซากพืชและซากสัตว์</b> ให้กลายเป็นแร่ธาตุคืนสู่ดิน!
+                        </p>
+                        <div class="bg-purple-100/60 p-4 rounded-xl text-purple-900 font-medium">
+                            🌟 ตัวอย่าง: เห็ด, รา, แบคทีเรีย, จุลินทรีย์
+                        </div>
+                        <p class="text-slate-500 text-sm">*ข้อคิด: ถ้าไม่มีผู้ย่อยสลาย ซากสิ่งมีชีวิตจะทับถมกันเต็มโลก และพืชจะขาดแร่ธาตุในดิน!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-4" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-amber-600 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> การถ่ายทอดพลังงาน และ กฎ 10 เปอร์เซ็นต์ (10% Law)
+                </h2>
+                <p class="text-slate-600 mb-6">
+                    พลังงานเริ่มแรกมาจาก <b>ดวงอาทิตย์</b> ถูกพืชเปลี่ยนเป็นพลังงานเคมี เมื่อสัตว์กินพืช และสัตว์กินสัตว์กินต่อกันไป พลังงานจะถูกส่งต่อไปเพียง <b>10%</b> เท่านั้น! อีก 90% สูญเสียไปในรูปของความร้อนและการใช้ชีวิต
+                </p>
+                <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 max-w-2xl mx-auto space-y-4">
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm">
+                        <span class="font-bold text-amber-800">☀️ ดวงอาทิตย์</span>
+                        <span class="text-slate-500">แหล่งพลังงานปฐมภูมิ</span>
+                    </div>
+                    <div class="text-center text-amber-500"><i class="fa-solid fa-arrow-down"></i></div>
+                    <div class="flex items-center justify-between bg-emerald-100 p-3 rounded-lg border border-emerald-300">
+                        <span class="font-bold text-emerald-800">🌱 พืช (ผู้ผลิต)</span>
+                        <span class="font-mono text-emerald-700 font-bold">10,000 kcal</span>
+                    </div>
+                    <div class="text-center text-emerald-500"><i class="fa-solid fa-arrow-down"></i> (10%)</div>
+                    <div class="flex items-center justify-between bg-yellow-100 p-3 rounded-lg border border-yellow-300">
+                        <span class="font-bold text-yellow-800">🐛 ตั๊กแตน (ผู้บริโภคอันดับ 1)</span>
+                        <span class="font-mono text-yellow-700 font-bold">1,000 kcal</span>
+                    </div>
+                    <div class="text-center text-yellow-500"><i class="fa-solid fa-arrow-down"></i> (10%)</div>
+                    <div class="flex items-center justify-between bg-orange-100 p-3 rounded-lg border border-orange-300">
+                        <span class="font-bold text-orange-800">🐸 กบ (ผู้บริโภคอันดับ 2)</span>
+                        <span class="font-mono text-orange-700 font-bold">100 kcal</span>
+                    </div>
+                    <div class="text-center text-orange-500"><i class="fa-solid fa-arrow-down"></i> (10%)</div>
+                    <div class="flex items-center justify-between bg-rose-100 p-3 rounded-lg border border-rose-300">
+                        <span class="font-bold text-rose-800">🦅 เหยี่ยว (ผู้บริโภคอันดับสูงสุด)</span>
+                        <span class="font-mono text-rose-700 font-bold">10 kcal</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-5" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-link"></i> ห่วงโซ่อาหาร (Food Chain) คืออะไร?
+                </h2>
+                <p class="text-slate-600 mb-4">
+                    คือ ความสัมพันธ์ของสิ่งมีชีวิตในเรื่องการกินต่อกันเป็นทอดๆ จากผู้ผลิตไปยังผู้บริโภค โดยการเขียนลูกศร <strong class="text-red-500 font-bold">หัวลูกศรจะชี้ไปทางผู้กิน (ผู้ได้รับพลังงาน)</strong> เสมอ!
+                </p>
+                <div class="bg-teal-50 p-6 rounded-2xl border border-teal-200 text-center">
+                    <div class="inline-flex flex-wrap items-center justify-center gap-3 text-lg font-bold">
+                        <span class="bg-white px-4 py-2 rounded-xl shadow border border-emerald-300">🌾 ข้าว</span>
+                        <span class="text-red-500 text-2xl">➔</span>
+                        <span class="bg-white px-4 py-2 rounded-xl shadow border border-amber-300">หนู 🐀</span>
+                        <span class="text-red-500 text-2xl">➔</span>
+                        <span class="bg-white px-4 py-2 rounded-xl shadow border border-purple-300">งู 🐍</span>
+                        <span class="text-red-500 text-2xl">➔</span>
+                        <span class="bg-white px-4 py-2 rounded-xl shadow border border-rose-300">นกอินทรี 🦅</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-6" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div>
+                        <h2 class="text-2xl font-bold text-indigo-700 flex items-center gap-2">
+                            <i class="fa-solid fa-network-wired"></i> เครื่องมือฝึกอ่านภาพสายใยอาหาร (Food Web Reader)
+                        </h2>
+                        <p class="text-sm text-slate-500">สายใยอาหาร คือ ห่วงโซ่อาหารหลายๆ ห่วงโซ่ที่ซับซ้อนและเกี่ยวข้องกันในระบบนิเวศ</p>
+                    </div>
+                    <button onclick="resetFoodWebTab6()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-rotate-left"></i> รีเซ็ตการเลือก
+                    </button>
+                </div>
+
+                <div class="relative bg-slate-900 rounded-2xl p-6 min-h-[480px] flex flex-col justify-between overflow-hidden shadow-inner border border-slate-700">
+                    <p class="text-indigo-300 text-xs text-center mb-2">คลิกที่สิ่งมีชีวิตเพื่อเลือก "ผู้โดนกิน" แล้วเลือก "ผู้กิน" เพื่อสร้างห่วงโซ่อาหารในสายใยอาหารนี้</p>
+                    
+                    <div class="grid grid-cols-3 md:grid-cols-4 gap-4 relative z-10 my-auto">
+                        <div id="node-grass" onclick="selectWebNode('หญ้า', 'ผู้ผลิต')" class="eco-node bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 p-3 rounded-xl border border-emerald-500 text-center cursor-pointer">
+                            <div class="text-3xl">🌿</div>
+                            <div class="font-bold text-sm">หญ้า</div>
+                            <div class="text-[10px] text-emerald-300">ผู้ผลิต</div>
+                        </div>
+                        <div id="node-flower" onclick="selectWebNode('ดอกไม้', 'ผู้ผลิต')" class="eco-node bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 p-3 rounded-xl border border-emerald-500 text-center cursor-pointer">
+                            <div class="text-3xl">🌸</div>
+                            <div class="font-bold text-sm">ดอกไม้</div>
+                            <div class="text-[10px] text-emerald-300">ผู้ผลิต</div>
+                        </div>
+
+                        <div id="node-rabbit" onclick="selectWebNode('กระต่าย', 'กินหญ้า')" class="eco-node bg-amber-800/80 hover:bg-amber-700 text-amber-100 p-3 rounded-xl border border-amber-500 text-center cursor-pointer">
+                            <div class="text-3xl">🐇</div>
+                            <div class="font-bold text-sm">กระต่าย</div>
+                            <div class="text-[10px] text-amber-300">ผู้บริโภคอันดับ 1</div>
+                        </div>
+                        <div id="node-butterfly" onclick="selectWebNode('ผีเสื้อ', 'กินดอกไม้')" class="eco-node bg-amber-800/80 hover:bg-amber-700 text-amber-100 p-3 rounded-xl border border-amber-500 text-center cursor-pointer">
+                            <div class="text-3xl">🦋</div>
+                            <div class="font-bold text-sm">ผีเสื้อ</div>
+                            <div class="text-[10px] text-amber-300">ผู้บริโภคอันดับ 1</div>
+                        </div>
+
+                        <div id="node-frog" onclick="selectWebNode('กบ', 'กินผีเสื้อ')" class="eco-node bg-teal-800/80 hover:bg-teal-700 text-teal-100 p-3 rounded-xl border border-teal-500 text-center cursor-pointer">
+                            <div class="text-3xl">🐸</div>
+                            <div class="font-bold text-sm">กบ</div>
+                            <div class="text-[10px] text-teal-300">ผู้บริโภคอันดับ 2</div>
+                        </div>
+                        <div id="node-snake" onclick="selectWebNode('งู', 'กินกระต่าย/กบ')" class="eco-node bg-rose-800/80 hover:bg-rose-700 text-rose-100 p-3 rounded-xl border border-rose-500 text-center cursor-pointer">
+                            <div class="text-3xl">🐍</div>
+                            <div class="font-bold text-sm">งู</div>
+                            <div class="text-[10px] text-rose-300">ผู้บริโภคอันดับ 2/3</div>
+                        </div>
+                        <div id="node-hawk" onclick="selectWebNode('เหยี่ยว', 'กินงู/กระต่าย')" class="eco-node bg-purple-800/80 hover:bg-purple-700 text-purple-100 p-3 rounded-xl border border-purple-500 text-center cursor-pointer">
+                            <div class="text-3xl">🦅</div>
+                            <div class="font-bold text-sm">เหยี่ยว</div>
+                            <div class="text-[10px] text-purple-300">ผู้บริโภคอันดับสูงสุด</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/90 border border-slate-600 rounded-xl p-4 mt-4 text-white">
+                        <div class="text-xs text-indigo-300 mb-1 font-semibold">ห่วงโซ่อาหารที่สร้างขึ้นขณะนี้:</div>
+                        <div id="webChainDisplay" class="text-lg font-bold text-yellow-300 min-h-[30px] flex items-center flex-wrap gap-2">
+                            <span class="text-slate-500 text-sm italic font-normal">คลิกเลือกสิ่งมีชีวิตด้านบนเพื่อเริ่มเชื่อมโยง...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-7" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-amber-700 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-scale-unbalanced"></i> เมื่อระบบนิเวศเปลี่ยน (Ecosystem Balance Simulator)
+                </h2>
+                <p class="text-slate-600 mb-6">ลองคลิกเลือกเหตุการณ์เปลี่ยนแปลงเพื่อดูผลกระทบลูกห่วงโซ่ต่อสิ่งมีชีวิตในระบบนิเวศ</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <button onclick="runScenario(1)" class="p-4 bg-red-50 hover:bg-red-100 border-2 border-red-300 rounded-xl text-left transition flex items-center gap-3">
+                        <div class="text-3xl">🔥</div>
+                        <div>
+                            <div class="font-bold text-red-900">เกิดไฟป่าเผาผลาญพืช</div>
+                            <div class="text-xs text-red-700">ผู้ผลิตลดลงอย่างกะทันหัน</div>
+                        </div>
+                    </button>
+
+                    <button onclick="runScenario(2)" class="p-4 bg-amber-50 hover:bg-amber-100 border-2 border-amber-300 rounded-xl text-left transition flex items-center gap-3">
+                        <div class="text-3xl">🏹</div>
+                        <div>
+                            <div class="font-bold text-amber-900">ผู้ล่าถูกล่าจนหมด</div>
+                            <div class="text-xs text-amber-700">เหยี่ยวและงูหายไปจากพื้นที่</div>
+                        </div>
+                    </button>
+
+                    <button onclick="runScenario(3)" class="p-4 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-300 rounded-xl text-left transition flex items-center gap-3">
+                        <div class="text-3xl">🌧️</div>
+                        <div>
+                            <div class="font-bold text-emerald-900">ฝนตกชุกสมบูรณ์</div>
+                            <div class="text-xs text-emerald-700">พืชเจริญเติบโตงดงาม</div>
+                        </div>
+                    </button>
+                </div>
+
+                <div id="scenarioResultCard" class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 transition">
+                    <div class="text-center text-slate-500 py-6">
+                        <i class="fa-solid fa-circle-info text-3xl mb-2 text-slate-400"></i>
+                        <p>กรุณาคลิกเลือกสถานการณ์ด้านบนเพื่อดูแบบจำลองการเปลี่ยนแปลง</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-8" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-green-100">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-flask"></i> ห้องทดลองเสมือนจริง: สมดุลประชากรสิ่งมีชีวิต
+                </h2>
+                <p class="text-slate-600 mb-4">ปรับเปลี่ยนจำนวนประชากรในระบบนิเวศจำลอง และกด "เริ่มจำลอง" เพื่อสังเกตค่าความสมดุล</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-teal-50/60 border border-teal-200 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-bold text-teal-900 text-lg">ปรับประชากรเริ่มต้น</h3>
+                        
+                        <div>
+                            <label class="text-sm font-semibold text-slate-700 flex justify-between">
+                                <span>🌱 พืช (ผู้ผลิต):</span>
+                                <span id="valPlant" class="text-teal-700 font-bold">100</span>
+                            </label>
+                            <input type="range" id="inputPlant" min="10" max="200" value="100" oninput="updateLabUI()" class="w-full accent-teal-600">
+                        </div>
+
+                        <div>
+                            <label class="text-sm font-semibold text-slate-700 flex justify-between">
+                                <span>🐇 สัตว์กินพืช:</span>
+                                <span id="valHerb" class="text-amber-700 font-bold">50</span>
+                            </label>
+                            <input type="range" id="inputHerb" min="5" max="100" value="50" oninput="updateLabUI()" class="w-full accent-amber-600">
+                        </div>
+
+                        <div>
+                            <label class="text-sm font-semibold text-slate-700 flex justify-between">
+                                <span>🐺 สัตว์กินเนื้อ:</span>
+                                <span id="valCarn" class="text-rose-700 font-bold">10</span>
+                            </label>
+                            <input type="range" id="inputCarn" min="0" max="30" value="10" oninput="updateLabUI()" class="w-full accent-rose-600">
+                        </div>
+
+                        <button onclick="runVirtualLabSim()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> คำนวณความสมดุล
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-900 rounded-2xl p-6 text-white flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line"></i> ผลการวิเคราะห์สมดุลระบบนิเวศ
+                            </h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                                    <div class="text-xs text-slate-400">ดัชนีอาหารพืช</div>
+                                    <div id="metricFoodIndex" class="text-xl font-bold text-emerald-400">1.00</div>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                                    <div class="text-xs text-slate-400">แรงกดดันผู้ล่า</div>
+                                    <div id="metricPredatorPressure" class="text-xl font-bold text-amber-400">1.00</div>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 col-span-2 sm:col-span-1">
+                                    <div class="text-xs text-slate-400">สถานะระบบนิเวศ</div>
+                                    <div id="metricStatus" class="text-lg font-bold text-teal-400">สมดุล</div>
+                                </div>
+                            </div>
+                            <div id="labAnalysisText" class="text-sm text-slate-300 leading-relaxed bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                                กดปุ่ม "คำนวณความสมดุล" เพื่อดูการประเมินสถานะระบบนิเวศ
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-4 text-right">ระบบวิเคราะห์นิเวศวิทยาเสมือนจริง ป.5</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-9" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-amber-200">
+                <div class="flex flex-wrap justify-between items-center mb-6 gap-2 border-b pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-amber-600 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy"></i> เกมภารกิจประเมินความรู้ (10 ด่าน)
+                        </h2>
+                        <p class="text-sm text-slate-500">ตอบคำถามและจัดหมวดหมู่เพื่อสะสมคะแนน 100 คะแนนเต็ม!</p>
+                    </div>
+                    <div class="bg-amber-100 text-amber-900 font-bold px-4 py-2 rounded-xl border border-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-star text-yellow-500"></i>
+                        <span>ด่านปัจจุบัน: <span id="currentLevelText">1</span>/10</span>
+                    </div>
+                </div>
+
+                <div id="gameLevelCard" class="min-h-[360px] flex flex-col justify-between">
+                    </div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
+                    <button id="prevLevelBtn" onclick="changeGameLevel(-1)" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm transition disabled:opacity-50">
+                        <i class="fa-solid fa-arrow-left"></i> ด่านก่อนหน้า
+                    </button>
+                    <div id="levelDots" class="flex gap-1.5 overflow-x-auto max-w-[200px] sm:max-w-none">
+                        </div>
+                    <button id="nextLevelBtn" onclick="changeGameLevel(1)" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl font-bold text-sm transition">
+                        ด่านถัดไป <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="nameModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="text-center">
+                <div class="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">ยินดีต้อนรับสู่นิเวศวิทยาหรรษา!</h3>
+                <p class="text-sm text-slate-500 mt-1">กรุณากรอกชื่อ-นามสกุลของนักเรียนก่อนเริ่มเรียนและทำกิจกรรม</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">ชื่อ-นามสกุล นักเรียน (ป.5):</label>
+                <input type="text" id="studentNameInput" placeholder="เช่น ด.ช. รักเรียน ขยันยิ่ง" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-green-500 focus:outline-none text-slate-800">
+            </div>
+            <button onclick="saveStudentName()" class="w-full py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl shadow-lg transition">
+                บันทึกและเริ่มเรียนรู้
+            </button>
+        </div>
+    </div>
+
+    <div id="teacherModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center gap-2 text-teal-800">
+                    <i class="fa-solid fa-chalkboard-user text-2xl"></i>
+                    <h3 class="text-xl font-bold">แผงควบคุมสำหรับครู (Teacher Portal)</h3>
+                </div>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <div class="text-xs text-emerald-700 font-bold uppercase">Google Sheets Integration Status</div>
+                    <div class="text-sm text-emerald-900 font-semibold flex items-center gap-1.5 mt-0.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        เชื่อมต่อระบบบันทึกคะแนนอัตโนมัติแล้ว
+                    </div>
+                </div>
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-600"></i>
+            </div>
+
+            <div class="text-xs bg-slate-100 p-3 rounded-xl font-mono text-slate-600 break-all">
+                <strong>Google Script App URL:</strong><br>
+                https://script.google.com/macros/s/AKfycbx6VrCcrCV_xot9kqlm4O-gljblbXQlmZ62HrnbpJN4eLY0MUPbddAMbgFQpiOw0BVj5Q/exec
+            </div>
+
+            <div class="space-y-2">
+                <h4 class="font-bold text-slate-800 text-sm">สถิติการใช้งานในเครื่องนี้ (Local Stats):</h4>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+                    <div class="bg-slate-50 p-3 rounded-xl border">
+                        <div class="text-xs text-slate-500">ชื่อนักเรียนปัจจุบัน</div>
+                        <div id="teacherModalStudent" class="font-bold text-slate-800 text-sm mt-1">-</div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border">
+                        <div class="text-xs text-slate-500">คะแนนรวมสะสม</div>
+                        <div id="teacherModalScore" class="font-bold text-amber-600 text-sm mt-1">0/100</div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border">
+                        <div class="text-xs text-slate-500">ส่งข้อมูลล่าสุด</div>
+                        <div id="teacherModalStatus" class="font-bold text-emerald-600 text-xs mt-1">พร้อมใช้งาน</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right pt-2 border-t">
+                <button onclick="closeTeacherModal()" class="px-5 py-2 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-700 transition">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global App State
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6VrCcrCV_xot9kqlm4O-gljblbXQlmZ62HrnbpJN4eLY0MUPbddAMbgFQpiOw0BVj5Q/exec";
+        let currentStudentName = localStorage.getItem("eco_student_name") || "";
+        let levelScores = new Array(10).fill(0);
+        let currentLevel = 1;
+        let webSelectedNodes = [];
+
+        // Quiz / Game Data (10 Levels)
+        const gameLevels = [
+            {
+                type: "mcq",
+                title: "ด่านที่ 1: ผู้ผลิตในระบบนิเวศ",
+                question: "สิ่งมีชีวิตใดต่อไปนี้จัดว่าเป็น 'ผู้ผลิต' ในห่วงโซ่อาหาร?",
+                options: ["ก. ตั๊กแตน", "ข. ต้นข้าว", "ค. เหยี่ยว", "ง. เห็ดรา"],
+                correct: 1,
+                explanation: "ต้นข้าวเป็นสิ่งมีชีวิตที่สร้างอาหารเองได้ด้วยกระบวนการสังเคราะห์ด้วยแสง จึงเป็นผู้ผลิต"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 2: ทิศทางของลูกศร",
+                question: "ในการเขียนห่วงโซ่อาหาร หัวลูกศรจะชี้ไปทางใดเสมอ?",
+                options: ["ก. ชี้ไปทางสิ่งมีชีวิตที่ถูกกิน", "ข. ชี้ไปทางผู้กิน (ผู้รับพลังงาน)", "ค. ชี้ไปทางผู้ผลิตเสมอ", "ง. ชี้ไปทางดวงอาทิตย์"],
+                correct: 1,
+                explanation: "หัวลูกศรจะชี้ไปทางผู้กินเสมอ เพื่อแสดงทิศทางการถ่ายทอดพลังงาน"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 3: ผู้บริโภคอันดับ 1",
+                question: "สิ่งมีชีวิตชนิดใดจัดเป็นผู้บริโภคอันดับ 1 (Herbivore)?",
+                options: ["ก. เสือกินเนื้อ", "ข. กระต่ายกินหญ้า", "ค. งูกินหนู", "ง. เห็ดกินซาก"],
+                correct: 1,
+                explanation: "กระต่ายกินหญ้า ซึ่งเป็นพืช จึงจัดเป็นผู้บริโภคพืชหรือผู้บริโภคอันดับ 1"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 4: ผู้ย่อยสลายสารอินทรีย์",
+                question: "ข้อใดเป็นหน้าที่สำคัญของ 'เห็ดและรา' ในระบบนิเวศ?",
+                options: ["ก. สร้างอาหารด้วยแสง", "ข. ล่าสัตว์อื่นเป็นอาหาร", "ค. ย่อยสลายซากสิ่งมีชีวิตให้เป็นแร่ธาตุคืนสู่ดิน", "ง. ให้พลังงานแสงแดดแก่พืช"],
+                correct: 2,
+                explanation: "เห็ดและราเป็นผู้ย่อยสลายสารอินทรีย์ ปล่อยเอนไซม์ย่อยซากสิ่งมีชีวิตคืนแร่ธาตุลงสู่ดิน"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 5: กฎ 10 เปอร์เซ็นต์",
+                question: "หากพืชสะสมพลังงานได้ 1,000 กิโลแคลอรี เมื่อหนูกินพืช หนูจะได้รับพลังงานประมาณเท่าใด?",
+                options: ["ก. 1,000 กิโลแคลอรี", "ข. 500 กิโลแคลอรี", "ค. 100 กิโลแคลอรี", "ง. 10 กิโลแคลอรี"],
+                correct: 2,
+                explanation: "ตามกฎ 10% พลังงานจะถูกส่งต่อไปยังลำดับถัดไปเพียง 10% เท่านั้น (10% ของ 1,000 = 100)"
+            },
+            {
+                type: "drag",
+                title: "ด่านที่ 6: จัดลำดับห่วงโซ่อาหาร",
+                question: "ลากและวางสิ่งมีชีวิตให้เรียงลำดับห่วงโซ่อาหารที่ถูกต้อง (ซ้ายไปขวา)",
+                items: [
+                    { id: "i1", text: "🌾 ต้นข้าว", role: "producer" },
+                    { id: "i2", text: "🐀 หนู", role: "cons1" },
+                    { id: "i3", text: "🐍 งู", role: "cons2" },
+                    { id: "i4", text: "🦅 นกอินทรี", role: "cons3" }
+                ],
+                correctOrder: ["i1", "i2", "i3", "i4"]
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 7: ความหมายของสายใยอาหาร",
+                question: "สายใยอาหาร (Food Web) แตกต่างจากห่วงโซ่อาหาร (Food Chain) อย่างไร?",
+                options: [
+                    "ก. สายใยอาหารแสดงความสัมพันธ์ที่ซับซ้อนของหลายๆ ห่วงโซ่อาหาร",
+                    "ข. สายใยอาหารมีเฉพาะพืชเท่านั้น",
+                    "ค. สายใยอาหารไม่มีผู้ย่อยสลาย",
+                    "ง. ไม่มีความแตกต่างกัน"
+                ],
+                correct: 0,
+                explanation: "สายใยอาหารเกิดจากห่วงโซ่อาหารหลายๆ ห่วงโซ่มาเชื่อมโยงสัมพันธ์กันอย่างซับซ้อน"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 8: การเปลี่ยนแปลงระบบนิเวศ",
+                question: "หากตั๊กแตนในนาข้าวถูกกำจัดจนหมดสิ้น จะเกิดอะไรขึ้นในระยะแรก?",
+                options: [
+                    "ก. ข้าวจะลดลงอย่างรวดเร็ว",
+                    "ข. กบซึ่งกินตั๊กแตนจะขาดแคลนอาหารและมีจำนวนลดลง",
+                    "ค. นกอินทรีจะเพิ่มขึ้นทวีคูณ",
+                    "ง. ไม่ส่งผลกระทบใดๆ"
+                ],
+                correct: 1,
+                explanation: "เมื่อเหยื่อ (ตั๊กแตน) หายไป ผู้ล่าโดยตรง (กบ) จะขาดแคลนอาหาร ส่งผลให้ประชากรกบลดลง"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 9: แหล่งพลังงานเริ่มต้น",
+                question: "พลังงานเริ่มต้นที่สุดของห่วงโซ่อาหารทั้งหมดมาจากแหล่งใด?",
+                options: ["ก. แร่ธาตุในดิน", "ข. น้ำฝน", "ค. ดวงอาทิตย์", "ง. ความร้อนใต้ภิภพ"],
+                correct: 2,
+                explanation: "ดวงอาทิตย์เป็นแหล่งพลังงานปฐมภูมิที่พืชใช้ในการสังเคราะห์ด้วยแสงเพื่อเริ่มต้นระบบนิเวศ"
+            },
+            {
+                type: "mcq",
+                title: "ด่านที่ 10: สมดุลธรรมชาติ",
+                question: "สิ่งใดช่วยรักษาสมดุลของระบบนิเวศให้ยั่งยืนมากที่สุด?",
+                options: [
+                    "ก. การตัดไม้ทำลายป่าเพื่อเพิ่มพื้นที่เกษตร",
+                    "ข. ความหลากหลายทางชีวภาพของสิ่งมีชีวิตในสายใยอาหาร",
+                    "ค. การล่าสัตว์ป่าเพื่อการกีฬา",
+                    "ง. การใช้สารเคมีกำจัดแมลงทั้งหมด"
+                ],
+                correct: 1,
+                explanation: "ความหลากหลายทางชีวภาพช่วยให้ระบบนิเวศมีความยืดหยุ่นและมีอาหารทดแทนกันเมื่อเกิดการเปลี่ยนแปลง"
+            }
+        ];
+
+        // Core App Initialization
+        window.addEventListener("DOMContentLoaded", () => {
+            if (!currentStudentName) {
+                openNameModal();
+            } else {
+                document.getElementById("displayStudentName").innerText = currentStudentName;
+            }
+            renderGameLevel(currentLevel);
+            renderLevelDots();
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabIndex) {
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".tab-btn").forEach(el => {
+                el.classList.remove("tab-active");
+                el.classList.add("text-green-100");
+            });
+
+            const targetTab = document.getElementById(`tab-${tabIndex}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabIndex}`);
+            if (targetTab && targetBtn) {
+                targetTab.classList.remove("hidden");
+                targetBtn.classList.add("tab-active");
+                targetBtn.classList.remove("text-green-100");
+            }
+        }
+
+        // Student Name Modal Functions
+        function openNameModal() {
+            document.getElementById("nameModal").classList.remove("hidden");
+        }
+
+        function saveStudentName() {
+            const input = document.getElementById("studentNameInput").value.trim();
+            if (input) {
+                currentStudentName = input;
+                localStorage.setItem("eco_student_name", currentStudentName);
+                document.getElementById("displayStudentName").innerText = currentStudentName;
+                document.getElementById("nameModal").classList.add("hidden");
+            } else {
+                alert("กรุณากรอกชื่อ-นามสกุลของคุณนักเรียนครับ");
+            }
+        }
+
+        // Teacher Portal Functions
+        function openTeacherModal() {
+            document.getElementById("teacherModalStudent").innerText = currentStudentName || "ยังไม่ระบุ";
+            document.getElementById("teacherModalScore").innerText = `${calculateTotalScore()}/100`;
+            document.getElementById("teacherModal").classList.remove("hidden");
+        }
+
+        function closeTeacherModal() {
+            document.getElementById("teacherModal").classList.add("hidden");
+        }
+
+        // TAB 6: Food Web Interactive Selection Logic
+        function selectWebNode(name, role) {
+            if (webSelectedNodes.includes(name)) return;
+            webSelectedNodes.push(name);
+            
+            const display = document.getElementById("webChainDisplay");
+            display.innerHTML = webSelectedNodes.map((n, idx) => `
+                <span class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1 shadow">
+                    ${n}
+                </span>
+                ${idx < webSelectedNodes.length - 1 ? '<i class="fa-solid fa-arrow-right text-yellow-400 text-sm"></i>' : ''}
+            `).join('');
+        }
+
+        function resetFoodWebTab6() {
+            webSelectedNodes = [];
+            document.getElementById("webChainDisplay").innerHTML = `<span class="text-slate-500 text-sm italic font-normal">คลิกเลือกสิ่งมีชีวิตด้านบนเพื่อเริ่มเชื่อมโยง...</span>`;
+        }
+
+        // TAB 7: Ecosystem Change Scenario Simulator
+        function runScenario(type) {
+            const resultContainer = document.getElementById("scenarioResultCard");
+            if (type === 1) {
+                resultContainer.className = "bg-red-50 border-2 border-red-300 rounded-2xl p-6 transition";
+                resultContainer.innerHTML = `
+                    <h3 class="text-xl font-bold text-red-900 mb-2 flex items-center gap-2">
+                        🔥 ผลกระทบ: เกิดไฟป่าเผาผลาญพืช
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-800 text-sm">
+                        <li><b>ผู้ผลิต (พืช/หญ้า) ลดลงฮวบฮาบ:</b> ทำให้ไม่มีอาหารสำหรับสัตว์กินพืช</li>
+                        <li><b>ผู้บริโภคอันดับ 1 (ตั๊กแตน/กระต่าย):</b> อพยพหรืออดอาหารตายจำนวนมาก</li>
+                        <li><b>ผู้บริโภคอันดับสูง (งู/เหยี่ยว):</b> ได้รับผลกระทบเนื่องจากเหยื่อลดลง เกิดภาวะเสียสมดุลขั้นรุนแรง</li>
+                    </ul>
+                `;
+            } else if (type === 2) {
+                resultContainer.className = "bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 transition";
+                resultContainer.innerHTML = `
+                    <h3 class="text-xl font-bold text-amber-900 mb-2 flex items-center gap-2">
+                        🏹 ผลกระทบ: ผู้ล่าถูกล่าจนหมดสิ้น
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-800 text-sm">
+                        <li><b>ไม่มีผู้ล่าควบคุมประชากร:</b> สัตว์กินพืช (กระต่าย/หนู) เพิ่มจำนวนขึ้นอย่างรวดเร็ว</li>
+                        <li><b>พืชถูกกินจนหมดสิ้น:</b> เกิดภาวะขาดแคลนพืชอย่างหนักในเวลาต่อมา</li>
+                        <li><b>ระบบนิเวศล่มสลาย:</b> สัตว์กินพืชอดอาหารตายตามมาเนื่องจากพืชโตไม่ทัน</li>
+                    </ul>
+                `;
+            } else if (type === 3) {
+                resultContainer.className = "bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 transition";
+                resultContainer.innerHTML = `
+                    <h3 class="text-xl font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                        🌧️ ผลกระทบ: ฝนตกชุกสมบูรณ์
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-emerald-800 text-sm">
+                        <li><b>ผู้ผลิตเจริญงอกงาม:</b> พืชและต้นหญ้ามีปริมาณเพียงพอและสมบูรณ์</li>
+                        <li><b>ผู้บริโภคทุกระดับมีอาหารสมบูรณ์:</b> ห่วงโซ่อาหารดำเนินไปอย่างมีเสถียรภาพ</li>
+                        <li><b>ระบบนิเวศอยู่ในภาวะสมดุลสมบูรณ์ (Ecological Balance)</b></li>
+                    </ul>
+                `;
+            }
+        }
+
+        // TAB 8: Virtual Lab Controls & Simulator
+        function updateLabUI() {
+            document.getElementById("valPlant").innerText = document.getElementById("inputPlant").value;
+            document.getElementById("valHerb").innerText = document.getElementById("inputHerb").value;
+            document.getElementById("valCarn").innerText = document.getElementById("inputCarn").value;
+        }
+
+        function runVirtualLabSim() {
+            const plants = parseInt(document.getElementById("inputPlant").value);
+            const herbs = parseInt(document.getElementById("inputHerb").value);
+            const carns = parseInt(document.getElementById("inputCarn").value);
+
+            const foodIndex = (plants / (herbs * 1.5)).toFixed(2);
+            const predatorPressure = ((carns * 2) / herbs).toFixed(2);
+
+            document.getElementById("metricFoodIndex").innerText = foodIndex;
+            document.getElementById("metricPredatorPressure").innerText = predatorPressure;
+
+            const statusEl = document.getElementById("metricStatus");
+            const textEl = document.getElementById("labAnalysisText");
+
+            if (foodIndex >= 0.8 && foodIndex <= 2.0 && predatorPressure >= 0.2 && predatorPressure <= 0.8) {
+                statusEl.innerText = "สมดุลดีเยี่ยม 🟢";
+                statusEl.className = "text-lg font-bold text-emerald-400";
+                textEl.innerText = "ระบบนิเวศนี้มีความสมดุลสูง ปริมาณผู้ผลิตเพียงพอต่อผู้บริโภคพืช และผู้ล่ามีจำนวนพอเหมาะในการควบคุมประชากร";
+            } else if (foodIndex < 0.8) {
+                statusEl.innerText = "พืชไม่พอ 🔴";
+                statusEl.className = "text-lg font-bold text-rose-400";
+                textEl.innerText = "คำเตือน: ปริมาณพืชมีน้อยเกินไปเมื่อเทียบกับสัตว์กินพืช อาจส่งผลให้สัตว์กินพืชอดอาหารตายในระยะยาว";
+            } else if (predatorPressure > 0.8) {
+                statusEl.innerText = "ผู้ล่ามากเกินไป 🟠";
+                statusEl.className = "text-lg font-bold text-amber-400";
+                textEl.innerText = "คำเตือน: จำนวนสัตว์กินเนื้อมีมากเกินไป จะทำให้สัตว์กินพืชถูกล่าจนสูญพันธุ์ และสัตว์กินเนื้อจะอดอาหารตามมา";
+            } else {
+                statusEl.innerText = "เสียสมดุล 🟡";
+                statusEl.className = "text-lg font-bold text-yellow-400";
+                textEl.innerText = "ระบบนิเวศกำลังสูญเสียสมดุล โปรดปรับอัตราส่วนสิ่งมีชีวิตให้สอดคล้องกัน";
+            }
+        }
+
+        // TAB 9: Game Engine & Renderers
+        function renderLevelDots() {
+            const container = document.getElementById("levelDots");
+            container.innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+                const dot = document.createElement("button");
+                dot.onclick = () => jumpToLevel(i);
+                dot.className = `w-7 h-7 rounded-full text-xs font-bold transition flex items-center justify-center ${
+                    i === currentLevel 
+                        ? "bg-amber-500 text-slate-900 ring-2 ring-amber-300" 
+                        : levelScores[i - 1] > 0 
+                        ? "bg-emerald-500 text-white" 
+                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                }`;
+                dot.innerText = i;
+                container.appendChild(dot);
+            }
+        }
+
+        function renderGameLevel(lvl) {
+            document.getElementById("currentLevelText").innerText = lvl;
+            const card = document.getElementById("gameLevelCard");
+            const data = gameLevels[lvl - 1];
+
+            document.getElementById("prevLevelBtn").disabled = (lvl === 1);
+
+            if (data.type === "mcq") {
+                card.innerHTML = `
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-slate-800">${data.title}</h3>
+                        <p class="text-slate-700 font-medium text-lg">${data.question}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            ${data.options.map((opt, idx) => `
+                                <button onclick="submitMCQAnswer(${lvl}, ${idx})" class="p-4 text-left rounded-xl border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 font-medium transition text-slate-700 flex items-center justify-between group">
+                                    <span>${opt}</span>
+                                    <i class="fa-solid fa-circle-check opacity-0 group-hover:opacity-100 text-amber-500 transition"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div id="feedbackArea-${lvl}" class="mt-4"></div>
+                `;
+            } else if (data.type === "drag") {
+                const shuffled = [...data.items].sort(() => Math.random() - 0.5);
+                card.innerHTML = `
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-slate-800">${data.title}</h3>
+                        <p class="text-slate-700 font-medium">${data.question}</p>
+                        
+                        <div class="flex flex-wrap gap-3 justify-center my-4 p-4 bg-slate-50 rounded-2xl border" id="dragSource">
+                            ${shuffled.map(item => `
+                                <div id="${item.id}" draggable="true" ondragstart="handleDragStart(event)" class="draggable bg-white px-4 py-3 rounded-xl border-2 border-amber-300 shadow-sm font-bold text-slate-800 hover:shadow transition">
+                                    ${item.text}
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="text-xs text-slate-500 font-bold text-center">ช่องวางตามลำดับห่วงโซ่อาหาร:</div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            ${[0, 1, 2, 3].map(idx => `
+                                <div ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${idx})" class="drop-zone border-2 border-dashed border-slate-300 rounded-2xl h-24 flex items-center justify-center p-2 text-slate-400 text-xs font-semibold text-center" id="dropSlot-${idx}">
+                                    ลำดับที่ ${idx + 1}
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <button onclick="checkDragLevel(${lvl})" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl shadow transition mt-2">
+                            ตรวจคำตอบด่านที่ 6
+                        </button>
+                    </div>
+                    <div id="feedbackArea-${lvl}" class="mt-4"></div>
+                `;
+            }
+            renderLevelDots();
+        }
+
+        // MCQ Answer Handler
+        function submitMCQAnswer(lvl, selectedIdx) {
+            const data = gameLevels[lvl - 1];
+            const feedback = document.getElementById(`feedbackArea-${lvl}`);
+            
+            if (selectedIdx === data.correct) {
+                levelScores[lvl - 1] = 10;
+                feedback.innerHTML = `
+                    <div class="bg-emerald-100 border border-emerald-300 text-emerald-900 p-4 rounded-xl flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
+                        <div>
+                            <div class="font-bold">ถูกต้องครับ! (+10 คะแนน)</div>
+                            <div class="text-xs text-emerald-700">${data.explanation}</div>
+                        </div>
+                    </div>
+                `;
+                confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+            } else {
+                levelScores[lvl - 1] = 0;
+                feedback.innerHTML = `
+                    <div class="bg-rose-100 border border-rose-300 text-rose-900 p-4 rounded-xl flex items-center gap-3">
+                        <i class="fa-solid fa-circle-xmark text-2xl text-rose-600"></i>
+                        <div>
+                            <div class="font-bold">ยังไม่ถูกต้อง ลองดูอีกครั้งนะ!</div>
+                            <div class="text-xs text-rose-700">${data.explanation}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            updateTotalScore();
+        }
+
+        // Drag & Drop Handlers for Level 6
+        let draggedId = null;
+        function handleDragStart(e) {
+            draggedId = e.target.id;
+            e.dataTransfer.setData("text/plain", e.target.id);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add("drag-over");
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove("drag-over");
+        }
+
+        function handleDrop(e, slotIdx) {
+            e.preventDefault();
+            e.currentTarget.classList.remove("drag-over");
+            const draggedEl = document.getElementById(draggedId);
+            if (draggedEl) {
+                e.currentTarget.innerHTML = "";
+                e.currentTarget.appendChild(draggedEl);
+            }
+        }
+
+        function checkDragLevel(lvl) {
+            const data = gameLevels[lvl - 1];
+            let userOrder = [];
+            for (let i = 0; i < 4; i++) {
+                const slot = document.getElementById(`dropSlot-${i}`);
+                const child = slot.firstElementChild;
+                if (child) {
+                    userOrder.push(child.id);
+                }
+            }
+
+            const feedback = document.getElementById(`feedbackArea-${lvl}`);
+            const isCorrect = JSON.stringify(userOrder) === JSON.stringify(data.correctOrder);
+
+            if (isCorrect) {
+                levelScores[lvl - 1] = 10;
+                feedback.innerHTML = `
+                    <div class="bg-emerald-100 border border-emerald-300 text-emerald-900 p-4 rounded-xl flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
+                        <div>
+                            <div class="font-bold">ถูกต้องสมบูรณ์! (+10 คะแนน)</div>
+                            <div class="text-xs text-emerald-700">เรียงลำดับ: พืช (ผู้ผลิต) ➔ หนู (ผู้บริโภค 1) ➔ งู (ผู้บริโภค 2) ➔ นกอินทรี (ผู้บริโภคสูงสุด)</div>
+                        </div>
+                    </div>
+                `;
+                confetti({ particleCount: 50, spread: 70, origin: { y: 0.8 } });
+            } else {
+                levelScores[lvl - 1] = 0;
+                feedback.innerHTML = `
+                    <div class="bg-rose-100 border border-rose-300 text-rose-900 p-4 rounded-xl flex items-center gap-3">
+                        <i class="fa-solid fa-circle-xmark text-2xl text-rose-600"></i>
+                        <div>
+                            <div class="font-bold">การเรียงลำดับยังไม่ถูกต้อง</div>
+                            <div class="text-xs text-rose-700">คำใบ้: เริ่มต้นด้วยผู้ผลิต (พืช) และตามด้วยผู้กินพืช ผู้กินสัตว์ ตามลำดับ</div>
+                        </div>
+                    </div>
+                `;
+            }
+            updateTotalScore();
+        }
+
+        // Navigation between Levels
+        function changeGameLevel(delta) {
+            const newLvl = currentLevel + delta;
+            if (newLvl >= 1 && newLvl <= 10) {
+                currentLevel = newLvl;
+                renderGameLevel(currentLevel);
+            }
+        }
+
+        function jumpToLevel(lvl) {
+            currentLevel = lvl;
+            renderGameLevel(currentLevel);
+        }
+
+        function calculateTotalScore() {
+            return levelScores.reduce((a, b) => a + b, 0);
+        }
+
+        function updateTotalScore() {
+            const total = calculateTotalScore();
+            document.getElementById("totalScore").innerText = total;
+
+            // Automatically Trigger Google Sheet Submission upon finishing Level 10 or high score update
+            sendScoreToGoogleSheet(currentStudentName || "นักเรียนไม่ได้ระบุชื่อ", `เกมห่วงโซ่อาหาร 10 ด่าน`, total);
+        }
+
+        // CORE REQUIREMENT 1: Google Sheets Submission Integration Function
+        function sendScoreToGoogleSheet(studentName, levelName, scoreObtained) {
+            if (!studentName) studentName = "นักเรียนไม่ได้ระบุชื่อ";
+
+            const payload = {
+                studentName: studentName,
+                levelName: levelName,
+                scoreObtained: scoreObtained,
+                timestamp: new Date().toISOString()
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                console.log("Score successfully dispatched to Google Sheets backend:", payload);
+                const statusEl = document.getElementById("teacherModalStatus");
+                if (statusEl) statusEl.innerText = "ส่งคะแนนสำเร็จแล้ว";
+            })
+            .catch(err => {
+                console.error("Error submitting score to Google Sheet:", err);
+            });
+        }
+    </script>
+</body>
+</html>
